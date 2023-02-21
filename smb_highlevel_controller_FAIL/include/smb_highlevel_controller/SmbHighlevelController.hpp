@@ -28,12 +28,13 @@ private:
 	ros::Publisher vis_pub;
 	ros::Subscriber subcriber_;
 	ros::Subscriber Point_sub;
-	ros::Publisher Vel_pub;
+	ros::Publisher smb_vel_pub;
 	std::string name_topic;
 	std::int32_t size_queue_topic;
 	std::float_t linear_gain;
 	std::float_t angular_gain;
 	visualization_msgs::Marker marker;
+//	geometry_msgs::Twist smb_vel_msg;
 	void pointcloudCallback(const sensor_msgs::PointCloud2& msg);
 	void scanCallback(const sensor_msgs::LaserScan& msg);
 	void Marker_publish(const float pos[]);

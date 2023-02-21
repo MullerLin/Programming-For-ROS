@@ -2,6 +2,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
 
+
 namespace smb_highlevel_controller {
 
 
@@ -21,8 +22,8 @@ SmbHighlevelController::SmbHighlevelController(ros::NodeHandle& nodeHandle):
 
 	 subcriber_ = nodeHandle_.subscribe(name_topic, size_queue_topic, &SmbHighlevelController::scanCallback, this);
 	 Point_sub = nodeHandle_.subscribe("/rslidar_points", 1, &SmbHighlevelController::pointcloudCallback, this);
-	 vis_pub = nodeHandle_.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
-	 Vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
+	 vis_pub = nodeHandle_.advertise<visualization_msgs::Marker>( "visualization_marker", 0);
+	 smb_vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>("/cmd_vel ",10);
 	 ROS_INFO("Successfully Launched Node.");
 }
 
@@ -33,7 +34,6 @@ SmbHighlevelController::~SmbHighlevelController()
 
 void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 {
-
 	//ROS_INFO_STREAM("TEST");
 
 	std::vector<float> ranges = msg.ranges;
@@ -72,6 +72,7 @@ void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 	ROS_INFO_STREAM( "pillar_x: " + std::to_string(pos[0]) + " pillar_y: " + std::to_string(pos[1]));
 	Motion_Controller(pos);
 //	ROS_INFO_STREAM("SIZE : " + std::to_string(detect_positions.size()));
+
 }
 
 void SmbHighlevelController::pointcloudCallback(const sensor_msgs::PointCloud2& msg)
@@ -110,11 +111,11 @@ void SmbHighlevelController::Marker_publish(const float position[])
 void SmbHighlevelController::Motion_Controller(const float position[])
 {
 	geometry_msgs::Twist smb_vel_msg;
-
+	float distance;
 	float dis_x = position[0];
 	float dis_y = position[1];
 	ROS_INFO_STREAM( "x_dposition: " + std::to_string(dis_x) + " y_dposition: " + std::to_string(dis_y));
-	float distance = dis_x *dis_x + dis_y*dis_y;
+
 	// distance =  sqrt( pow(dis_x) +  pow(dis_y) );
 	if (distance <= 0.2)
 	{
@@ -124,31 +125,7 @@ void SmbHighlevelController::Motion_Controller(const float position[])
 	}
 	else
 	{
-		float angle_error =  atan(dis_y/dis_x);
-		float dis_eror = sqrt(dis_x *dis_x + dis_y*dis_y);
-		ROS_INFO("SMB ERROR at [%0.2f m , %0.2f rad]", dis_eror, angle_error);
-
-		if (angle_error >= 0.018)
-		{
-			smb_vel_msg.linear.x = 0;
-//			smb_vel_msg.angular.z = 0.01;
-//			smb_vel_msg.linear.x = linear_gain * dis_eror;
-			smb_vel_msg.angular.z = angular_gain * angle_error;
-		}
-		else
-		{
-//			smb_vel_msg.linear.x = 1;
-			smb_vel_msg.angular.z = 0;
-			smb_vel_msg.linear.x = linear_gain * dis_eror;
-//			smb_vel_msg.angular.z = angular_gain * angle_error;
-		}
-		//smb_vel_msg.linear.x = linear_gain * dis_eror;
-		//smb_vel_msg.angular.z = angular_gain * angle_error;
-		//smb_vel_msg.linear.x = 1;
-		//smb_vel_msg.angular.z = 0.5;
-		Vel_pub.publish(smb_vel_msg);
 		ROS_INFO_STREAM("--On The Way!!--");
-		ROS_INFO("SMB velocity at [%0.2f m/s , %0.2f rad/s]",smb_vel_msg.linear.x, smb_vel_msg.angular.z);
 	}
 }
 
