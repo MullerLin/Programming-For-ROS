@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+ <!-- Launch SMB Gazebo-->
+  <include file="$(find smb_gazebo)/launch/smb_gazebo.launch">
+  	<arg name="world_file"    value="$(find smb_highlevel_controller)/worlds/singlePillar.world"/>
+    	<arg name="laser_enabled"     value="true"/>	
+        <arg name="laser_scan_min_height"     value="-0.2"/>
+        <arg name="laser_scan_max_height"     value="1.0"/>
+  </include>
+   
+  
+  <node pkg="rviz" name="rviz" type="rviz" args="-d $(find smb_highlevel_controller)/launch/rviz_config.rviz" required="true"></node>
+  
+  <node pkg="smb_highlevel_controller" type="smb_highlevel_controller"
+  	name="smb_highlevel_controller" output="screen">
+  	<rosparam command="load"
+  		file="$(find smb_highlevel_controller)/config/topic_name_queue.yaml" /><rosparam
+  		command="load" file="$(find smb_highlevel_controller)/config/Control_Gain.yaml">
+</rosparam>
+  </node>
+
+</launch>
