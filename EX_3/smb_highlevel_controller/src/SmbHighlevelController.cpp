@@ -113,10 +113,9 @@ void SmbHighlevelController::Motion_Controller(const float position[])
 
 	float dis_x = position[0];
 	float dis_y = position[1];
-	ROS_INFO_STREAM( "x_dposition: " + std::to_string(dis_x) + " y_dposition: " + std::to_string(dis_y));
+	//ROS_INFO_STREAM( "x_dposition: " + std::to_string(dis_x) + " y_dposition: " + std::to_string(dis_y));
 	float distance = dis_x *dis_x + dis_y*dis_y;
-	// distance =  sqrt( pow(dis_x) +  pow(dis_y) );
-	if (distance <= 0.2)
+	if (distance <= 0.4)
 	{
 		smb_vel_msg.linear.x = 0;
 		smb_vel_msg.angular.z = 0;
@@ -131,21 +130,15 @@ void SmbHighlevelController::Motion_Controller(const float position[])
 		if (angle_error >= 0.018)
 		{
 			smb_vel_msg.linear.x = 0;
-//			smb_vel_msg.angular.z = 0.01;
-//			smb_vel_msg.linear.x = linear_gain * dis_eror;
+
 			smb_vel_msg.angular.z = angular_gain * angle_error;
 		}
 		else
 		{
-//			smb_vel_msg.linear.x = 1;
 			smb_vel_msg.angular.z = 0;
 			smb_vel_msg.linear.x = linear_gain * dis_eror;
-//			smb_vel_msg.angular.z = angular_gain * angle_error;
 		}
-		//smb_vel_msg.linear.x = linear_gain * dis_eror;
-		//smb_vel_msg.angular.z = angular_gain * angle_error;
-		//smb_vel_msg.linear.x = 1;
-		//smb_vel_msg.angular.z = 0.5;
+
 		Vel_pub.publish(smb_vel_msg);
 		ROS_INFO_STREAM("--On The Way!!--");
 		ROS_INFO("SMB velocity at [%0.2f m/s , %0.2f rad/s]",smb_vel_msg.linear.x, smb_vel_msg.angular.z);
