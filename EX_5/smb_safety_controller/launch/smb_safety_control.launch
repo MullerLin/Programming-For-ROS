@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+ <!-- Launch SMB Gazebo-->
+  <include file="$(find smb_gazebo)/launch/smb_gazebo.launch">
+  	<arg name="world_file"    value="/usr/share/gazebo-11/worlds/robocup14_spl_field.world"/>
+    	<arg name="laser_enabled"     value="true"/>	
+  </include>
+   
+  <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py"
+  	name="teleop" output="screen" launch-prefix = "gnome-terminal -e">
+  </node>
+  
+
+  <node pkg="rviz" name="rviz" type="rviz" args="-d $(find smb_highlevel_controller)/config/rviz_config.rviz" required="true"></node>
+
+  <node pkg="smb_safety_controller" type="smb_safety_controller"  name="smb_safety_controller" output="screen">
+	<rosparam command="load" file="$(find smb_safety_controller)/config/topic_name_queue.yaml" />
+  </node>
+
+</launch>

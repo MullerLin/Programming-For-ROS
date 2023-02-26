@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(smb_highlevel_controller)
+project(smb_emrgency_stop)
 
 # use C++11
 add_compile_options(-std=c++11)
@@ -32,8 +32,8 @@ include_directories(
 
 # Declare a C++ executable
 add_executable(${PROJECT_NAME}
-  src/smb_highlevel_controller_node.cpp
-  src/SmbHighlevelController.cpp
+  src/smb_emrgency_stop_node.cpp
+  src/SmbEmrgencyStop.cpp
 )
 
 # Specify libraries to link a library or executable target against

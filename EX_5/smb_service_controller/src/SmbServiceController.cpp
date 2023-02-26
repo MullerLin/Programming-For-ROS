@@ -1,6 +1,7 @@
-#include "smb_highlevel_controller/SmbHighlevelController.hpp"
+#include "smb_service_controller/SmbServiceController.hpp"
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
+
 
 namespace smb_highlevel_controller {
 
@@ -18,11 +19,12 @@ SmbHighlevelController::SmbHighlevelController(ros::NodeHandle& nodeHandle):
 	   ROS_ERROR("Parameters Reading Error!");
 	   ros::requestShutdown();
 	 }
-
+	 is_on = false;
 	 subcriber_ = nodeHandle_.subscribe(name_topic, size_queue_topic, &SmbHighlevelController::scanCallback, this);
 	 Point_sub = nodeHandle_.subscribe("/rslidar_points", 1, &SmbHighlevelController::pointcloudCallback, this);
 	 vis_pub = nodeHandle_.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
 	 Vel_pub = nodeHandle_.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
+	 smb_switch = nodeHandle_.advertiseService("SMB_Switch", &SmbHighlevelController::SwitchCallback, this);
 	 ROS_INFO("Successfully Launched Node.");
 }
 
@@ -55,7 +57,7 @@ void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 		    pos_vector.push_back(y);
 		    detect_positions.push_back(pos_vector);
 //		    float pos[2]={x,y};
-		    // Marker_publish(pos);
+//		    Marker_publish(pos);
 		}
 	}
 	float pos[2]={0,0};
@@ -69,7 +71,7 @@ void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 	pos[0] = pos[0] / detect_positions.size();
 	pos[1] = pos[1] / detect_positions.size();
 	Marker_publish(pos);
-	ROS_INFO_STREAM( "pillar_x: " + std::to_string(pos[0]) + " pillar_y: " + std::to_string(pos[1]));
+	ROS_INFO_STREAM( "Nearest Target_x: " + std::to_string(pos[0]) + " Nearest Target_y: " + std::to_string(pos[1]));
 	Motion_Controller(pos);
 //	ROS_INFO_STREAM("SIZE : " + std::to_string(detect_positions.size()));
 }
@@ -89,7 +91,7 @@ void SmbHighlevelController::Marker_publish(const float position[])
 	marker.action = visualization_msgs::Marker::ADD;
 	marker.pose.position.x = position[0];
 	marker.pose.position.y = position[1];
-//	ROS_INFO_STREAM( "x_dposition: " + std::to_string(marker.pose.position.x ) + " y_dposition: " + std::to_string(marker.pose.position.y));
+	// ROS_INFO_STREAM( "x_dposition: " + std::to_string(marker.pose.position.x ) + " y_dposition: " + std::to_string(marker.pose.position.y));
 	marker.pose.position.z = 0.434;
 	marker.pose.orientation.x = 0.0;
 	marker.pose.orientation.y = 0.0;
@@ -125,12 +127,11 @@ void SmbHighlevelController::Motion_Controller(const float position[])
 	{
 		float angle_error =  atan(dis_y/dis_x);
 		float dis_eror = sqrt(dis_x *dis_x + dis_y*dis_y);
-		ROS_INFO("SMB ERROR at [%0.2f m , %0.2f rad]", dis_eror, angle_error);
+		//ROS_INFO("SMB ERROR at [%0.2f m , %0.2f rad]", dis_eror, angle_error);
 
 		if (abs(angle_error) >= 0.018)
 		{
 			smb_vel_msg.linear.x = 0;
-
 			smb_vel_msg.angular.z = angular_gain * angle_error;
 		}
 		else
@@ -138,11 +139,41 @@ void SmbHighlevelController::Motion_Controller(const float position[])
 			smb_vel_msg.angular.z = 0;
 			smb_vel_msg.linear.x = linear_gain * dis_eror;
 		}
+		if(is_on == true)
+		{
+			Vel_pub.publish(smb_vel_msg);
+			ROS_INFO_STREAM("--On The Way!!--");
+			ROS_INFO("SMB velocity at [%0.2f m/s , %0.2f rad/s]",smb_vel_msg.linear.x, smb_vel_msg.angular.z);
+		}
+		else
+		{
+			smb_vel_msg.angular.z = 0;
+			smb_vel_msg.linear.x = 0;
+			Vel_pub.publish(smb_vel_msg);
+			ROS_INFO_STREAM("-!-SMB stop-!-");
+		}
 
-		Vel_pub.publish(smb_vel_msg);
-		ROS_INFO_STREAM("--On The Way!!--");
-		ROS_INFO("SMB velocity at [%0.2f m/s , %0.2f rad/s]",smb_vel_msg.linear.x, smb_vel_msg.angular.z);
 	}
 }
 
 } /* namespace */
+bool smb_highlevel_controller::SmbHighlevelController::SwitchCallback(std_srvs::SetBool::Request &request,
+																	  std_srvs::SetBool::Response &response)
+{
+
+	bool input = request.data;
+	if (input == true)
+	{
+		is_on = true;
+		response.message = "SMB move!";
+		ROS_INFO("!! SMB MOVE !!");
+	}
+	else
+	{
+		is_on = false;
+		response.message = "SMB stop!";
+		ROS_INFO("!! SMB STOP !!");
+	}
+
+return true;
+}
