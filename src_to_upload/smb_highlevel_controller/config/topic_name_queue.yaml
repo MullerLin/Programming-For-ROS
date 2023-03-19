@@ -1,3 +1,0 @@
-param_topic_subcribe:
-  name: /scan
-  queue_size: 1

@@ -42,7 +42,7 @@ void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 	Stop_SMB_Service.request.data = false;
 	if (min_range <= 1.6){
 		Emergency_stop.call(Stop_SMB_Service);
-		if (!Stop_SMB_Service.response.success)
+		if (Stop_SMB_Service.response.success)
 		{
 			ROS_INFO_STREAM(Stop_SMB_Service.response.message);
 			ROS_INFO("COLLISION WARNING!!SMB STOPS SUCCESSFULLY!!");

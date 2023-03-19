@@ -57,7 +57,7 @@ void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 		    pos_vector.push_back(y);
 		    detect_positions.push_back(pos_vector);
 //		    float pos[2]={x,y};
-//		    Marker_publish(pos);
+		    // Marker_publish(pos);
 		}
 	}
 	float pos[2]={0,0};
@@ -71,7 +71,7 @@ void SmbHighlevelController::scanCallback(const sensor_msgs::LaserScan& msg)
 	pos[0] = pos[0] / detect_positions.size();
 	pos[1] = pos[1] / detect_positions.size();
 	Marker_publish(pos);
-	ROS_INFO_STREAM( "Nearest Target_x: " + std::to_string(pos[0]) + " Nearest Target_y: " + std::to_string(pos[1]));
+	ROS_INFO_STREAM( "TEST  Nearest Target_x: " + std::to_string(pos[0]) + " Nearest Target_y: " + std::to_string(pos[1]));
 	Motion_Controller(pos);
 //	ROS_INFO_STREAM("SIZE : " + std::to_string(detect_positions.size()));
 }
@@ -91,7 +91,7 @@ void SmbHighlevelController::Marker_publish(const float position[])
 	marker.action = visualization_msgs::Marker::ADD;
 	marker.pose.position.x = position[0];
 	marker.pose.position.y = position[1];
-	// ROS_INFO_STREAM( "x_dposition: " + std::to_string(marker.pose.position.x ) + " y_dposition: " + std::to_string(marker.pose.position.y));
+	ROS_INFO_STREAM( "x_dposition: " + std::to_string(marker.pose.position.x ) + " y_dposition: " + std::to_string(marker.pose.position.y));
 	marker.pose.position.z = 0.434;
 	marker.pose.orientation.x = 0.0;
 	marker.pose.orientation.y = 0.0;
@@ -166,12 +166,14 @@ bool smb_highlevel_controller::SmbHighlevelController::SwitchCallback(std_srvs::
 	{
 		is_on = true;
 		response.message = "SMB move!";
+		response.success = true;
 		ROS_INFO("!! SMB MOVE !!");
 	}
 	else
 	{
 		is_on = false;
 		response.message = "SMB stop!";
+		response.success = true;
 		ROS_INFO("!! SMB STOP !!");
 	}
 
